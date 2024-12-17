@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bug Hunting Dork</title>
+    <style>
+        /* Hacker-Themed Styling */
+        body {
+            background-color: black;
+            color: #00ff00;
+            font-family: "Courier New", Courier, monospace;
+            margin: 0;
+            padding: 20px;
+            text-shadow: 0 0 5px #00ff00;
+        }
+        h1 {
+            text-align: center;
+            color: #00ff00;
+            text-shadow: 0 0 10px #00ff00, 0 0 20px #007700;
+        }
+        h2 {
+            text-align: center;
+            color: #00ff00;
+            font-size: 18px;
+            margin-bottom: 20px;
+            text-shadow: 0 0 5px #00ff00, 0 0 10px #007700;
+        }
+        input, button {
+            background-color: #000000;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            padding: 10px;
+            margin: 5px 0;
+            font-family: "Courier New", Courier, monospace;
+            font-size: 14px;
+        }
+        button {
+            cursor: pointer;
+            box-shadow: 0 0 10px #00ff00;
+        }
+        button:hover {
+            background-color: #003300;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background-color: #001100;
+            padding: 20px;
+            box-shadow: 0 0 20px #00ff00;
+            border-radius: 5px;
+        }
+        #output {
+            margin-top: 20px;
+            display: none;
+            animation: fadeIn 1.5s ease-in-out forwards;
+        }
+        .dork-line {
+            margin: 10px 0;
+            font-size: 16px;
+            opacity: 0;
+            animation: slideIn 0.8s ease-in-out forwards;
+        }
+        @keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+        @keyframes slideIn {
+            0% { transform: translateY(20px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>BUG HUNTING DORK</h1>
+        <h2>By Cyber Prince</h2>
+        <label for="domain">Enter Target Domain:</label><br>
+        <input type="text" id="domain" placeholder="example.gov or target.in"><br>
+        <button onclick="generateDorks()">Generate Dorks</button>
+
+        <!-- Output Section -->
+        <div id="output"></div>
+    </div>
+
+    <script>
+        function generateDorks() {
+            const domain = document.getElementById('domain').value.trim();
+            if (!domain) {
+                alert('Please enter a valid domain!');
+                return;
+            }
+
+            const dorks = [
+                `site:${domain} ext:pdf "COMPANY SENSITIVE"`,
+                `site:${domain} ext:pdf "CONFIDENTIAL"`,
+                `site:${domain} ext:pdf "STRICTLY CONFIDENTIAL"`,
+                `site:${domain} ext:pdf "HIGHLY CONFIDENTIAL"`,
+                `site:${domain} ext:pdf "PRIVATE"`,
+                `site:${domain} ext:pdf "PRIVATE AND CONFIDENTIAL"`,
+                `site:${domain} ext:pdf "PRIVATE AND SENSITIVE"`,
+                `site:${domain} inurl:view inurl:private ext:pdf`,
+                `site:${domain} inurl:upload ext:pdf`,
+                `site:${domain} inurl:internal ext:pdf`,
+                `site:${domain} inurl:storage ext:pdf`,
+                `site:${domain} inurl:download ext:pdf`,
+                `site:${domain} inurl:webview ext:pdf`,
+                `site:${domain} inurl:content ext:pdf`,
+                `site:${domain} inurl:_data ext:pdf`,
+                `site:${domain} inurl:/login.aspx`,
+                `site:${domain} inurl:/admin.aspx`,
+                `site:*.${domain} inurl:& inurl:? inurl:=`,
+                `site:${domain} intitle:"index of" inurl:/config/`,
+                `site:.*.*.${domain} "Server Status" | confidential | “employee only” | proprietary | top secret | classified | trade secret | internal | private`
+            ];
+
+            const outputDiv = document.getElementById('output');
+            outputDiv.innerHTML = ""; // Clear previous content
+            outputDiv.style.display = "block"; // Show the output section
+
+            // Generate dorks with animation
+            let delay = 0.5;
+            for (let i = 0; i < dorks.length; i += 3) {
+                const dorkLine = document.createElement('div');
+                dorkLine.classList.add('dork-line');
+                dorkLine.style.animationDelay = `${delay}s`;
+
+                // Group 3 dorks in a row
+                dorkLine.textContent = `${dorks[i] || ''}    ${dorks[i + 1] || ''}    ${dorks[i + 2] || ''}`;
+                outputDiv.appendChild(dorkLine);
+
+                delay += 0.5; // Increment animation delay for next line
+            }
+        }
+    </script>
+</body>
+</html>
