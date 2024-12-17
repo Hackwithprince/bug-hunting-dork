@@ -1,4 +1,4 @@
-# Bug Hunting Dork Generator
+# Bug Hunting Dork 
 
 Welcome to the **Bug Hunting Dork**! This tool is designed for security researchers and bug hunters to generate various Google dorks, which can help in discovering vulnerabilities across websites.
 
