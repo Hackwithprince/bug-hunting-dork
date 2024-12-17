@@ -29,3 +29,6 @@ If you have suggestions for new dorks or improvements to the tool, feel free to 
 
 This tool was created by **Cyber Prince**, a security researcher and bug hunter with extensive experience in discovering and fixing vulnerabilities in major organizations.
 
+### **Disclaimer**
+
+This tool, Bug Hunting Dork , is intended for ethical hacking and educational purposes only. Ensure you have proper authorization before using it on any system or domain. Unauthorized use is illegal and may lead to consequences. Use this tool responsibly and at your own risk.
