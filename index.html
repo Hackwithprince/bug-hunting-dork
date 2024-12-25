@@ -128,13 +128,13 @@
 
             // Generate dorks with animation
             let delay = 0.5;
-            for (let i = 0; i < dorks.length; i += 3) {
+            for (let i = 0; i < dorks.length; i++) {
                 const dorkLine = document.createElement('div');
                 dorkLine.classList.add('dork-line');
                 dorkLine.style.animationDelay = `${delay}s`;
 
-                // Group 3 dorks in a row
-                dorkLine.textContent = `${dorks[i] || ''}    ${dorks[i + 1] || ''}    ${dorks[i + 2] || ''}`;
+                // Display each dork on a single line
+                dorkLine.textContent = dorks[i];
                 outputDiv.appendChild(dorkLine);
 
                 delay += 0.5; // Increment animation delay for next line
