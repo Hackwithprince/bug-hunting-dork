@@ -111,7 +111,15 @@
                 `site:${domain} inurl:/admin.aspx`,
                 `site:*.${domain} inurl:& inurl:? inurl:=`,
                 `site:${domain} intitle:"index of" inurl:/config/`,
-                `site:.*.*.${domain} "Server Status" | confidential | “employee only” | proprietary | top secret | classified | trade secret | internal | private`
+                `site:.*.*.${domain} "Server Status" | confidential | “employee only” | proprietary | top secret | classified | trade secret | internal | private`,
+                `site:drive.google.com inurl:/drive/folders "${domain}"`,
+                `site:${domain} "drive.google.com/drive/folders"`,
+                `site:${domain} "drive.google.com/drive/"`,
+                `site:${domain} "drive.google.com"`,
+                `site:${domain} "drive.google.com/drive/file/d"`,
+                `site:${domain} "drive.google.com/drive/file"`,
+                `site:${domain} "drive.google.com/drive/u/0"`,
+                `site:${domain} "drive.google.com/drive/u/1"`
             ];
 
             const outputDiv = document.getElementById('output');
