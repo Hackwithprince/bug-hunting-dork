@@ -16,8 +16,7 @@ I am a **Bug Hunter and Security Researcher**. Over the years, I have successful
 
 1. Visit the (https://Hackwithprince.github.io/bug-hunting-dork/).
 2. Enter a domain name (e.g., `example.com`).
-3. Click **"Generate Dork"**.
-4. The tool will display a list of dorks that you can use in your security testing.
+3. The tool will display a list of dorks that you can use in your security testing.
 
 ## Contributing
 
