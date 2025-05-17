@@ -45,7 +45,7 @@
         </div>
 
         <div id="dorkListContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            </div>
+        </div>
 
         <footer class="mt-12 text-center text-slate-500 text-xs">
             <p>Disclaimer: This tool is intended for educational and ethical security testing purposes only.
@@ -66,7 +66,7 @@
             { query: 'inurl:"/admin" intitle:"login"', description: 'Finds admin login pages by searching for both the "/admin" URL and "login" in the title.' },
             { query: 'inurl:"/cgi-bin/"', description: 'Identifies old CGI scripts that may still be running and vulnerable.' },
             { query: 'site:example.com filetype:xls', description: 'Locates Excel files , which may contain sensitive data.' },
-            { query: 'inurl:"/admin" site:edu', description: 'Searches for admin pages specifically on educational websites.' },
+            { query: 'inurl:"/admin" site:example.com', description: 'Searches for admin pages on a specific website.' },
             { query: 'intitle:"index of" /backup', description: 'Locates exposed backup directories.' },
             { query: 'filetype:log inurl:"error"', description: 'Finds log files that may contain error messages or stack traces.' },
             { query: 'intext:"confidential" filetype:pdf', description: 'Finds PDFs that may contain the word "confidential," often used in internal documents.' },
@@ -93,7 +93,7 @@
             { query: 'inurl:"/wp-admin/" intitle:"login"', description: 'Searches for WordPress admin login pages.' },
             { query: 'intext:"Database dump" filetype:sql', description: 'Finds SQL database dumps containing valuable data.' },
             { query: 'intitle:"index of" "~backup"', description: 'Searches for exposed backup directories (often tilde prefixed).' },
-            { query: 'site:edu inurl:"login"', description: 'Finds login pages on educational websites.' },
+            { query: 'site:example.com inurl:"login"', description: 'Finds login pages on educational websites.' },
             { query: 'inurl:"/private" filetype:pdf', description: 'Locates private PDFs that may contain sensitive documents.' },
             { query: 'intitle:"index of" ~private', description: 'Searches for directories marked as private (tilde prefixed).' },
             { query: 'inurl:"admin" filetype:pdf', description: 'Locates PDFs related to admin files or directories.' },
@@ -125,7 +125,7 @@
             { query: 'intitle:"index of" "logs"', description: 'Finds exposed logs directories.' },
             { query: 'intitle:"index of" "~passwords"', description: 'Searches for directories with exposed password-related files (tilde prefixed).' },
             { query: 'intext:"login: admin" filetype:txt', description: 'Finds text files that might expose admin login details.' },
-            { query: 'site:edu inurl:"directory"', description: 'Searches for directory pages on educational sites.' },
+            { query: 'site:example.com inurl:"directory"', description: 'Searches for directory pages on educational sites.' },
             { query: 'inurl:"/search" filetype:html', description: 'Finds exposed search pages.' },
             { query: 'inurl:"/public_html" filetype:html', description: 'Finds HTML pages located in the public directory.' },
             { query: 'intitle:"index of" /scripts', description: 'Searches for exposed script directories.' },
@@ -153,11 +153,10 @@
             { query: 'inurl:"/admin" intitle:"configuration"', description: 'Finds exposed admin configuration pages that could potentially expose sensitive settings or access credentials.' },
             { query: 'intitle:"index of" "~config"', description: 'Searches for exposed directories containing configuration files (tilde prefixed), which may reveal application secrets or settings.' },
             { query: 'filetype:json inurl:"token"', description: 'Finds JSON files containing API tokens or other sensitive data.' },
-            { query: 'site:example.com "employee" filetype:xls', description: 'Locates Excel files  containing employee information.' },
+             { query: 'site:example.com "employee" filetype:xls', description: 'Locates Excel files  containing employee information.' },
             { query: 'inurl:"/uploads/" filetype:docx', description: 'Searches for exposed Word document files in the "uploads" directory, which might contain sensitive data.' },
             { query: 'intitle:"index of" "~config" "~private"', description: 'Finds directories containing both configuration files and private files (tilde prefixed), which could expose sensitive data.' },
             { query: 'filetype:dbf "credit card"', description: 'Finds DBF database files containing credit card information.' },
-
             // Newly Added Dorks
             { query: 'site:example.com ext:pdf "COMPANY SENSITIVE"', description: 'Finds PDF files marked "COMPANY SENSITIVE".' },
             { query: 'site:example.com ext:pdf "CONFIDENTIAL"', description: 'Finds PDF files marked "CONFIDENTIAL".' },
@@ -194,7 +193,6 @@
         const dorkListContainer = document.getElementById('dorkListContainer');
 
         // --- Functions ---
-
         /**
          * Renders the dork list based on the current domain input.
          */
@@ -205,41 +203,45 @@
             dorksData.forEach(dork => {
                 const originalQuery = dork.query;
                 let finalQuery = originalQuery; // Start with the original
+                let modifiedDescription = dork.description;
+
+                // Step 1:  Replace "site:gov" with "site:example.com"
+                finalQuery = finalQuery.replace(/site:gov/g, 'site:example.com');
+
+                // Step 2: Remove " on government websites" from descriptions
+                modifiedDescription = modifiedDescription.replace(/ on government websites/g, '');
+
 
                 if (targetDomain) {
-                    // Step 1: Globally replace "example.com" placeholder text with the target domain.
+                    // Step 3: Globally replace "example.com" placeholder text with the target domain.
                     // This handles `site:example.com` and "example.com" as a keyword.
                     // It also correctly handles `site:*.example.com` -> `site:*.target.com`
                     if (originalQuery.includes('example.com')) {
                         // Using a regex with 'g' flag to replace all occurrences.
-                        // Need to escape '.' in 'example.com' for literal dot matching if used in more complex regex,
-                        // but for simple string replacement, 'example.com' is fine.
-                        // To be safe with potential regex characters in targetDomain (unlikely for domains),
-                        // direct string replacement is often better if not needing regex features for 'example.com' itself.
-                        // However, `replace(/example\.com/g, targetDomain)` is robust for 'example.com'.
-                        finalQuery = originalQuery.replace(/example\.com/g, targetDomain);
+                        finalQuery = finalQuery.replace(/example\.com/g, targetDomain);
                     }
 
-                    // Step 2: Append `site:targetDomain` ONLY if the original dork had NO site operator at all.
+                    // Step 4: Append `site:targetDomain` ONLY if the original dork had NO site operator at all.
                     // The check is on originalQuery to reflect its base state.
                     // The regex /site:[a-zA-Z0-9.*-]+/ matches common site operators including those with wildcards.
                     if (!originalQuery.match(/site:[a-zA-Z0-9.*-]+/)) {
                         finalQuery = finalQuery + ' site:' + targetDomain;
                     }
                 }
+
                 // If targetDomain is empty, finalQuery remains dork.query (which might include example.com or be generic).
 
                 // Create dork item element
                 const dorkItem = document.createElement('div');
                 dorkItem.className = 'dork-item bg-slate-800 p-4 rounded-lg shadow-md hover:shadow-xl transition-all duration-200 ease-in-out cursor-pointer transform hover:-translate-y-1';
-                
+
                 const queryDisplay = document.createElement('p');
                 queryDisplay.className = 'dork-query-display text-sky-400 font-mono text-sm break-all mb-1';
                 queryDisplay.textContent = finalQuery;
 
                 const descriptionDisplay = document.createElement('p');
                 descriptionDisplay.className = 'text-slate-300 text-xs';
-                descriptionDisplay.textContent = dork.description;
+                descriptionDisplay.textContent = modifiedDescription; // Use the modified description.
 
                 dorkItem.appendChild(queryDisplay);
                 dorkItem.appendChild(descriptionDisplay);
