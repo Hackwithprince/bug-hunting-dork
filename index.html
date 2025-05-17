@@ -3,143 +3,263 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bug Hunting Dork</title>
+    <title>BUG HUNTING DORK</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Hacker-Themed Styling */
         body {
-            background-color: black;
-            color: #00ff00;
-            font-family: "Courier New", Courier, monospace;
-            margin: 0;
-            padding: 20px;
-            text-shadow: 0 0 5px #00ff00;
+            font-family: 'Inter', sans-serif;
         }
-        h1 {
-            text-align: center;
-            color: #00ff00;
-            text-shadow: 0 0 10px #00ff00, 0 0 20px #007700;
+        /* Custom scrollbar for better aesthetics in dark theme */
+        ::-webkit-scrollbar {
+            width: 8px;
         }
-        h2 {
-            text-align: center;
-            color: #00ff00;
-            font-size: 18px;
-            margin-bottom: 20px;
-            text-shadow: 0 0 5px #00ff00, 0 0 10px #007700;
+        ::-webkit-scrollbar-track {
+            background: #1e293b; /* slate-800 */
         }
-        input, button {
-            background-color: #000000;
-            color: #00ff00;
-            border: 1px solid #00ff00;
-            padding: 10px;
-            margin: 5px 0;
-            font-family: "Courier New", Courier, monospace;
-            font-size: 14px;
+        ::-webkit-scrollbar-thumb {
+            background: #38bdf8; /* sky-500 */
+            border-radius: 4px;
         }
-        button {
-            cursor: pointer;
-            box-shadow: 0 0 10px #00ff00;
+        ::-webkit-scrollbar-thumb:hover {
+            background: #0ea5e9; /* sky-600 */
         }
-        button:hover {
-            background-color: #003300;
-        }
-        .container {
-            max-width: 800px;
-            margin: auto;
-            background-color: #001100;
-            padding: 20px;
-            box-shadow: 0 0 20px #00ff00;
-            border-radius: 5px;
-        }
-        #output {
-            margin-top: 20px;
-            display: none;
-            animation: fadeIn 1.5s ease-in-out forwards;
-        }
-        .dork-line {
-            margin: 10px 0;
-            font-size: 16px;
-            opacity: 0;
-            animation: slideIn 0.8s ease-in-out forwards;
-        }
-        @keyframes fadeIn {
-            0% { opacity: 0; }
-            100% { opacity: 1; }
-        }
-        @keyframes slideIn {
-            0% { transform: translateY(20px); opacity: 0; }
-            100% { transform: translateY(0); opacity: 1; }
+        .dork-item:hover .dork-query-display {
+            color: #7dd3fc; /* sky-300 for hover effect */
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <h1>BUG HUNTING DORK</h1>
-        <h2>By Cyber Prince</h2>
-        <label for="domain">Enter Target Domain:</label><br>
-        <input type="text" id="domain" placeholder="example.gov or target.in"><br>
-        <button onclick="generateDorks()">Generate Dorks</button>
+<body class="bg-slate-900 text-slate-200 p-4 md:p-8 antialiased">
+    <div class="container mx-auto max-w-5xl">
+        <header class="mb-8 text-center">
+            <h1 class="text-4xl font-bold text-sky-400">Google Dorking Tool</h1>
+            <p class="text-slate-400 mt-2 text-sm md:text-base">
+                Enter a target domain to customize dorks. Clicking a dork opens the search in Google.
+            </p>
+        </header>
 
-        <!-- Output Section -->
-        <div id="output"></div>
+        <div class="mb-8 sticky top-4 z-10 bg-slate-900 py-4">
+            <input type="text" id="domainInput" placeholder="Enter domain (e.g., target.com)"
+                   class="w-full p-3 rounded-lg bg-slate-800 text-slate-100 border border-slate-700
+                          focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all duration-200 ease-in-out shadow-sm">
+        </div>
+
+        <div id="dorkListContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            </div>
+
+        <footer class="mt-12 text-center text-slate-500 text-xs">
+            <p>Disclaimer: This tool is intended for educational and ethical security testing purposes only.
+                Always obtain explicit permission before conducting any form of testing on systems or networks you do not own.</p>
+        </footer>
     </div>
 
     <script>
-        function generateDorks() {
-            const domain = document.getElementById('domain').value.trim();
-            if (!domain) {
-                alert('Please enter a valid domain!');
-                return;
-            }
+        // --- Data: List of Dorks ---
+        const dorksData = [
+            // Original Dorks
+            { query: 'site:example.com filetype:pdf', description: 'Finds PDF files on a specific website.' },
+            { query: 'intitle:"index of" admin', description: 'Searches for directories that have "admin" in their title.' },
+            { query: 'inurl:"phpinfo.php"', description: 'Locates PHP information pages that can expose server configuration details.' },
+            { query: 'inurl:"/wp-login.php"', description: 'Finds WordPress login pages that may be publicly accessible.' },
+            { query: 'filetype:xls inurl:"email"', description: 'Locates Excel files containing email addresses.' },
+            { query: 'intitle:"powered by WordPress"', description: 'Finds websites powered by WordPress, potentially exposing sites with default configurations.' },
+            { query: 'inurl:"/admin" intitle:"login"', description: 'Finds admin login pages by searching for both the "/admin" URL and "login" in the title.' },
+            { query: 'inurl:"/cgi-bin/"', description: 'Identifies old CGI scripts that may still be running and vulnerable.' },
+            { query: 'site:gov filetype:xls', description: 'Locates Excel files on government websites, which may contain sensitive data.' },
+            { query: 'inurl:"/admin" site:edu', description: 'Searches for admin pages specifically on educational websites.' },
+            { query: 'intitle:"index of" /backup', description: 'Locates exposed backup directories.' },
+            { query: 'filetype:log inurl:"error"', description: 'Finds log files that may contain error messages or stack traces.' },
+            { query: 'intext:"confidential" filetype:pdf', description: 'Finds PDFs that may contain the word "confidential," often used in internal documents.' },
+            { query: 'site:example.com inurl:login', description: 'Finds login pages on a specific website.' },
+            { query: 'filetype:sql inurl:"dump"', description: 'Locates SQL database dumps, often containing sensitive data.' },
+            { query: 'intitle:"Network Status" inurl:"admin"', description: 'Finds network status pages with admin access.' },
+            { query: 'inurl:"/backup" filetype:zip', description: 'Finds zip files that may contain backups, potentially exposing sensitive data.' },
+            { query: 'intitle:"Index of" "~ftp"', description: 'Searches for exposed FTP directories.' },
+            { query: 'site:com inurl:"password"', description: 'Finds pages with the word "password" in the URL on .com domains.' },
+            { query: 'filetype:log inurl:"access"', description: 'Locates access logs which may reveal entry points or vulnerability details.' },
+            { query: 'inurl:"/admin" site:org', description: 'Searches for admin pages specifically on organizational sites.' },
+            { query: 'intitle:"server-status"', description: 'Finds Apache server status pages, which can disclose valuable server information.' },
+            { query: 'intext:"user: admin" filetype:txt', description: 'Looks for text files containing "user: admin," which may reveal usernames.' },
+            { query: 'inurl:"/wp-content/" intitle:"directory"', description: 'Searches for exposed directories in WordPress content.' },
+            { query: 'filetype:xml inurl:"config"', description: 'Locates exposed XML configuration files.' },
+            { query: 'intext:"name" filetype:csv', description: 'Finds CSV files that contain names.' },
+            { query: 'intitle:"email list" filetype:csv', description: 'Locates CSV files containing lists of email addresses.' },
+            { query: 'filetype:pdf intext:"password"', description: 'Finds PDFs that contain the word "password."' },
+            { query: 'site:example.com "email address"', description: 'Searches for email addresses on a specific website.' },
+            { query: 'inurl:"login" filetype:php', description: 'Finds login pages built in PHP format.' },
+            { query: 'intitle:"index of" /uploads', description: 'Locates exposed directories for file uploads.' },
+            { query: 'intext:"user" inurl:"login"', description: 'Searches for login pages that contain the word "user" in the URL.' },
+            { query: 'inurl:"/admin" filetype:html', description: 'Finds HTML admin pages.' },
+            { query: 'inurl:"/wp-admin/" intitle:"login"', description: 'Searches for WordPress admin login pages.' },
+            { query: 'intext:"Database dump" filetype:sql', description: 'Finds SQL database dumps containing valuable data.' },
+            { query: 'intitle:"index of" "~backup"', description: 'Searches for exposed backup directories (often tilde prefixed).' },
+            { query: 'site:edu inurl:"login"', description: 'Finds login pages on educational websites.' },
+            { query: 'inurl:"/private" filetype:pdf', description: 'Locates private PDFs that may contain sensitive documents.' },
+            { query: 'intitle:"index of" ~private', description: 'Searches for directories marked as private (tilde prefixed).' },
+            { query: 'inurl:"admin" filetype:pdf', description: 'Locates PDFs related to admin files or directories.' },
+            { query: 'filetype:sql inurl:"database"', description: 'Finds exposed SQL files related to databases.' },
+            { query: 'site:org intitle:"admin" inurl:"login"', description: 'Looks for login pages on organizational websites.' },
+            { query: 'inurl:"/confidential" filetype:pdf', description: 'Locates PDF files labeled as confidential.' },
+            { query: 'intitle:"index of" /config', description: 'Searches for exposed configuration files.' },
+            { query: 'intitle:"index of" "backup" ~private', description: 'Finds private backup directories that may be exposed.' },
+            { query: 'intext:"password" filetype:log', description: 'Finds log files containing password information.' },
+            { query: 'inurl:"/db/" filetype:sql', description: 'Locates exposed SQL database files in /db/ directory.' },
+            { query: 'intitle:"index of" /config ~backup', description: 'Searches for configuration files and backups that are publicly accessible.' },
+            { query: 'filetype:json inurl:"config"', description: 'Finds exposed JSON configuration files.' },
+            { query: 'inurl:"admin" intext:"login" filetype:html', description: 'Locates admin login pages in HTML format.' },
+            { query: 'filetype:xml inurl:"user"', description: 'Finds XML files containing user data.' },
+            { query: 'intitle:"email" filetype:txt', description: 'Finds text files containing email addresses.' },
+            { query: 'intitle:"list of users" filetype:xls', description: 'Finds Excel files containing user lists.' },
+            { query: 'site:example.com inurl:"contact"', description: 'Searches for contact pages on a specific website.' },
+            { query: 'intitle:"passwords" filetype:txt', description: 'Finds text files that may contain passwords.' },
+            { query: 'inurl:"/users" filetype:csv', description: 'Locates CSV files containing user data in /users/ directory.' },
+            { query: 'filetype:csv "email list"', description: 'Finds CSV files containing email lists.' },
+            { query: 'intitle:"index of" ~password', description: 'Finds directories or pages that may expose password-related files (tilde prefixed).' },
+            { query: 'filetype:log "admin login"', description: 'Locates log files that may contain admin login attempts.' },
+            { query: 'inurl:"/admin" intitle:"dashboard"', description: 'Finds dashboard login pages for admin access.' },
+            { query: 'site:com inurl:"contact"', description: 'Searches for contact pages on commercial websites.' },
+            { query: 'intitle:"list of employees" filetype:xls', description: 'Finds Excel files containing employee lists.' },
+            { query: 'filetype:sql inurl:"users"', description: 'Searches for exposed SQL files containing user data.' },
+            { query: 'filetype:xls inurl:"contact list"', description: 'Finds Excel files containing contact information.' },
+            { query: 'inurl:"/admin/config" filetype:php', description: 'Locates PHP configuration files for admin pages.' },
+            { query: 'intitle:"index of" "logs"', description: 'Finds exposed logs directories.' },
+            { query: 'intitle:"index of" "~passwords"', description: 'Searches for directories with exposed password-related files (tilde prefixed).' },
+            { query: 'intext:"login: admin" filetype:txt', description: 'Finds text files that might expose admin login details.' },
+            { query: 'site:edu inurl:"directory"', description: 'Searches for directory pages on educational sites.' },
+            { query: 'inurl:"/search" filetype:html', description: 'Finds exposed search pages.' },
+            { query: 'inurl:"/public_html" filetype:html', description: 'Finds HTML pages located in the public directory.' },
+            { query: 'intitle:"index of" /scripts', description: 'Searches for exposed script directories.' },
+            { query: 'inurl:"/cgi-bin/" filetype:pl', description: 'Finds exposed Perl CGI scripts.' },
+            { query: 'filetype:txt inurl:"password"', description: 'Locates text files containing the word "password."' },
+            { query: 'inurl:"/wp-includes/" filetype:php', description: 'Finds PHP files in the WordPress includes directory.' },
+            { query: 'intitle:"index of" "~confidential"', description: 'Searches for directories containing confidential files (tilde prefixed).' },
+            { query: 'filetype:xml inurl:"settings"', description: 'Finds XML files containing settings information.' },
+            { query: 'inurl:"/admin/configure" filetype:php', description: 'Locates PHP configuration files for admin pages.' },
+            { query: 'inurl:"/config" filetype:json', description: 'Finds exposed JSON configuration files.' },
+            { query: 'inurl:"/uploads/" filetype:jpg', description: 'Locates uploaded image files, potentially exposing sensitive images.' },
+            { query: 'inurl:"/admin/config.php" filetype:php', description: 'Finds PHP configuration files for admin pages.' },
+            { query: 'intitle:"index of" "~.htaccess"', description: 'Searches for exposed .htaccess files (tilde prefixed).' },
+            { query: 'inurl:"/sensitive" filetype:txt', description: 'Locates text files containing sensitive data.' },
+            { query: 'filetype:csv "credit card"', description: 'Finds CSV files potentially containing credit card information.' },
+            { query: 'inurl:"/backups" filetype:sql', description: 'Finds exposed SQL files in backup directories.' },
+            { query: 'intitle:"index of" /docs', description: 'Locates exposed document directories.' },
+            { query: 'inurl:"/admin_login" filetype:html', description: 'Finds exposed admin login pages.' },
+            { query: 'inurl:"/debug" filetype:php', description: 'Finds exposed PHP debug files.' },
+            { query: 'filetype:json "api key"', description: 'Finds JSON files containing API keys.' },
+            { query: 'inurl:"/private/backup" filetype:tar', description: 'Searches for TAR backup files that may be exposed in private backup directories.' },
+            { query: 'filetype:sql inurl:"password"', description: 'Finds exposed SQL files that may contain passwords or login credentials.' },
+            { query: 'intitle:"index of" "logins"', description: 'Searches for exposed directories that might contain login information or credential files.' },
+            { query: 'inurl:"/wp-config.php"', description: 'Locates the wp-config.php file in WordPress installations, which may contain database credentials.' },
+            { query: 'inurl:"/admin" intitle:"configuration"', description: 'Finds exposed admin configuration pages that could potentially expose sensitive settings or access credentials.' },
+            { query: 'intitle:"index of" "~config"', description: 'Searches for exposed directories containing configuration files (tilde prefixed), which may reveal application secrets or settings.' },
+            { query: 'filetype:json inurl:"token"', description: 'Finds JSON files containing API tokens or other sensitive data.' },
+            { query: 'site:gov "employee" filetype:xls', description: 'Locates Excel files on government sites containing employee information.' },
+            { query: 'inurl:"/uploads/" filetype:docx', description: 'Searches for exposed Word document files in the "uploads" directory, which might contain sensitive data.' },
+            { query: 'intitle:"index of" "~config" "~private"', description: 'Finds directories containing both configuration files and private files (tilde prefixed), which could expose sensitive data.' },
+            { query: 'filetype:dbf "credit card"', description: 'Finds DBF database files containing credit card information.' },
 
-            const dorks = [
-                `site:${domain} ext:pdf "COMPANY SENSITIVE"`,
-                `site:${domain} ext:pdf "CONFIDENTIAL"`,
-                `site:${domain} ext:pdf "STRICTLY CONFIDENTIAL"`,
-                `site:${domain} ext:pdf "HIGHLY CONFIDENTIAL"`,
-                `site:${domain} ext:pdf "PRIVATE"`,
-                `site:${domain} ext:pdf "PRIVATE AND CONFIDENTIAL"`,
-                `site:${domain} ext:pdf "PRIVATE AND SENSITIVE"`,
-                `site:${domain} inurl:view inurl:private ext:pdf`,
-                `site:${domain} inurl:upload ext:pdf`,
-                `site:${domain} inurl:internal ext:pdf`,
-                `site:${domain} inurl:storage ext:pdf`,
-                `site:${domain} inurl:download ext:pdf`,
-                `site:${domain} inurl:webview ext:pdf`,
-                `site:${domain} inurl:content ext:pdf`,
-                `site:${domain} inurl:_data ext:pdf`,
-                `site:${domain} inurl:/login.aspx`,
-                `site:${domain} inurl:/admin.aspx`,
-                `site:*.${domain} inurl:& inurl:? inurl:=`,
-                `site:${domain} intitle:"index of" inurl:/config/`,
-                `site:.*.*.${domain} "Server Status" | confidential | “employee only” | proprietary | top secret | classified | trade secret | internal | private`,
-                `site:drive.google.com inurl:/drive/folders "${domain}"`,
-                `site:${domain} "drive.google.com/drive/folders"`,
-                `site:${domain} "drive.google.com/drive/"`,
-                `site:${domain} "drive.google.com"`,
-                `site:${domain} "drive.google.com/drive/file/d"`,
-                `site:${domain} "drive.google.com/drive/file"`,
-                `site:${domain} "drive.google.com/drive/u/0"`,
-                `site:${domain} "drive.google.com/drive/u/1"`
-            ];
+            // Newly Added Dorks
+            { query: 'site:example.com ext:pdf "COMPANY SENSITIVE"', description: 'Finds PDF files marked "COMPANY SENSITIVE".' },
+            { query: 'site:example.com ext:pdf "CONFIDENTIAL"', description: 'Finds PDF files marked "CONFIDENTIAL".' },
+            { query: 'site:example.com ext:pdf "STRICTLY CONFIDENTIAL"', description: 'Finds PDF files marked "STRICTLY CONFIDENTIAL".' },
+            { query: 'site:example.com ext:pdf "HIGHLY CONFIDENTIAL"', description: 'Finds PDF files  marked "HIGHLY CONFIDENTIAL".' },
+            { query: 'site:example.com ext:pdf "PRIVATE"', description: 'Finds PDF files  marked "PRIVATE".' },
+            { query: 'site:example.com ext:pdf "PRIVATE AND CONFIDENTIAL"', description: 'Finds PDF files marked "PRIVATE AND CONFIDENTIAL".' },
+            { query: 'site:example.com ext:pdf "PRIVATE AND SENSITIVE"', description: 'Finds PDF files marked "PRIVATE AND SENSITIVE".' },
+            { query: 'site:example.com inurl:view inurl:private ext:pdf', description: 'Finds private PDF files with "view" and "private" in URL.' },
+            { query: 'site:example.com inurl:upload ext:pdf', description: 'Finds PDF files in "upload" directories.' },
+            { query: 'site:example.com inurl:internal ext:pdf', description: 'Finds PDF files in "internal" URLs.' },
+            { query: 'site:example.com inurl:storage ext:pdf', description: 'Finds PDF files in "storage" URLs.' },
+            { query: 'site:example.com inurl:download ext:pdf', description: 'Finds PDF files in "download" URLs.' },
+            { query: 'site:example.com inurl:webview ext:pdf', description: 'Finds PDF files in "webview" URLs.' },
+            { query: 'site:example.com inurl:content ext:pdf', description: 'Finds PDF files in "content" URLs.' },
+            { query: 'site:example.com inurl:_data ext:pdf', description: 'Finds PDF files in "_data" URLs.' },
+            { query: 'site:example.com inurl:/login.aspx', description: 'Finds ASP.NET login pages.' },
+            { query: 'site:example.com inurl:/admin.aspx', description: 'Finds ASP.NET admin pages.' },
+            { query: 'site:*.example.com inurl:& inurl:? inurl:=', description: 'Finds URLs with parameters on subdomains of example.com.' },
+            { query: 'site:example.com intitle:"index of" inurl:/config/', description: 'Finds "index of" pages for /config/ directories on example.com.' },
+            { query: 'site:.*.*.example.com "Server Status" | confidential | "employee only" | proprietary | top secret | classified | trade secret | internal | private', description: 'Searches sensitive keywords on deep subdomains of example.com.' },
+            { query: 'site:drive.google.com inurl:/drive/folders "example.com"', description: 'Finds Google Drive folders mentioning "example.com".' },
+            { query: 'site:example.com "drive.google.com/drive/folders"', description: 'Finds pages on example.com mentioning "drive.google.com/drive/folders".' },
+            { query: 'site:example.com "drive.google.com/drive/"', description: 'Finds pages on example.com mentioning "drive.google.com/drive/".' },
+            { query: 'site:example.com "drive.google.com"', description: 'Finds pages on example.com mentioning "drive.google.com".' },
+            { query: 'site:example.com "drive.google.com/drive/file/d"', description: 'Finds pages on example.com mentioning specific Google Drive file links.' },
+            { query: 'site:example.com "drive.google.com/drive/file"', description: 'Finds pages on example.com mentioning Google Drive files.' },
+            { query: 'site:example.com "drive.google.com/drive/u/0"', description: 'Finds pages on example.com mentioning Google Drive user 0 paths.' },
+            { query: 'site:example.com "drive.google.com/drive/u/1"', description: 'Finds pages on example.com mentioning Google Drive user 1 paths.' }
+        ];
 
-            const outputDiv = document.getElementById('output');
-            outputDiv.innerHTML = ""; // Clear previous content
-            outputDiv.style.display = "block"; // Show the output section
+        // --- DOM Elements ---
+        const domainInput = document.getElementById('domainInput');
+        const dorkListContainer = document.getElementById('dorkListContainer');
 
-            // Generate dorks with animation
-            let delay = 0.5;
-            for (let i = 0; i < dorks.length; i++) {
-                const dorkLine = document.createElement('div');
-                dorkLine.classList.add('dork-line');
-                dorkLine.style.animationDelay = `${delay}s`;
+        // --- Functions ---
 
-                // Display each dork on a single line
-                dorkLine.textContent = dorks[i];
-                outputDiv.appendChild(dorkLine);
+        /**
+         * Renders the dork list based on the current domain input.
+         */
+        function renderDorks() {
+            dorkListContainer.innerHTML = ''; // Clear existing dorks
+            const targetDomain = domainInput.value.trim();
 
-                delay += 0.5; // Increment animation delay for next line
-            }
+            dorksData.forEach(dork => {
+                const originalQuery = dork.query;
+                let finalQuery = originalQuery; // Start with the original
+
+                if (targetDomain) {
+                    // Step 1: Globally replace "example.com" placeholder text with the target domain.
+                    // This handles `site:example.com` and "example.com" as a keyword.
+                    // It also correctly handles `site:*.example.com` -> `site:*.target.com`
+                    if (originalQuery.includes('example.com')) {
+                        // Using a regex with 'g' flag to replace all occurrences.
+                        // Need to escape '.' in 'example.com' for literal dot matching if used in more complex regex,
+                        // but for simple string replacement, 'example.com' is fine.
+                        // To be safe with potential regex characters in targetDomain (unlikely for domains),
+                        // direct string replacement is often better if not needing regex features for 'example.com' itself.
+                        // However, `replace(/example\.com/g, targetDomain)` is robust for 'example.com'.
+                        finalQuery = originalQuery.replace(/example\.com/g, targetDomain);
+                    }
+
+                    // Step 2: Append `site:targetDomain` ONLY if the original dork had NO site operator at all.
+                    // The check is on originalQuery to reflect its base state.
+                    // The regex /site:[a-zA-Z0-9.*-]+/ matches common site operators including those with wildcards.
+                    if (!originalQuery.match(/site:[a-zA-Z0-9.*-]+/)) {
+                        finalQuery = finalQuery + ' site:' + targetDomain;
+                    }
+                }
+                // If targetDomain is empty, finalQuery remains dork.query (which might include example.com or be generic).
+
+                // Create dork item element
+                const dorkItem = document.createElement('div');
+                dorkItem.className = 'dork-item bg-slate-800 p-4 rounded-lg shadow-md hover:shadow-xl transition-all duration-200 ease-in-out cursor-pointer transform hover:-translate-y-1';
+                
+                const queryDisplay = document.createElement('p');
+                queryDisplay.className = 'dork-query-display text-sky-400 font-mono text-sm break-all mb-1';
+                queryDisplay.textContent = finalQuery;
+
+                const descriptionDisplay = document.createElement('p');
+                descriptionDisplay.className = 'text-slate-300 text-xs';
+                descriptionDisplay.textContent = dork.description;
+
+                dorkItem.appendChild(queryDisplay);
+                dorkItem.appendChild(descriptionDisplay);
+
+                // Add click event listener to search on Google
+                dorkItem.addEventListener('click', () => {
+                    const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(finalQuery)}`;
+                    window.open(searchUrl, '_blank');
+                });
+
+                dorkListContainer.appendChild(dorkItem);
+            });
         }
+
+        // --- Event Listeners ---
+        domainInput.addEventListener('input', renderDorks);
+
+        // --- Initial Render ---
+        // Render dorks on page load
+        renderDorks();
     </script>
 </body>
 </html>
